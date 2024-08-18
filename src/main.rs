@@ -109,6 +109,29 @@ async fn main() {
         .for_each(|x| println!("{:?}", x));
 
     // Get the light's value.
+    let res = client.get("http://192.168.0.213:8581/api/accessories/3b41b98a6fc7128c27917ac7cb89395ece21a9a2213ebc9e6dd2d95868b9d0a5").bearer_auth(&parsed_auth.access_token).send().await.unwrap();
+    println!("Bed Light:\n{}", res.text().await.unwrap());
 
     // Set the light's value.
+    // Turn light off.
+    let mut body = HashMap::new();
+    body.insert("characteristicType", "On");
+    body.insert("value", "1");
+    let res = client.put("http://192.168.0.213:8581/api/accessories/3b41b98a6fc7128c27917ac7cb89395ece21a9a2213ebc9e6dd2d95868b9d0a5").bearer_auth(&parsed_auth.access_token).json(&body).send().await.unwrap();
+    println!("Changing light on/off status code: {}", res.status());
+
+    #[derive(Serialize)]
+    struct LightParam {
+        #[serde(rename = "characteristicType")]
+        characteristic_type: String,
+        value: u32,
+    }
+
+    // Set brightness
+    let body = LightParam {
+        characteristic_type: "Brightness".to_string(),
+        value: 25,
+    };
+    let res = client.put("http://192.168.0.213:8581/api/accessories/3b41b98a6fc7128c27917ac7cb89395ece21a9a2213ebc9e6dd2d95868b9d0a5").bearer_auth(&parsed_auth.access_token).json(&body).send().await.unwrap();
+    println!("Changing light brightness status code: {}", res.status());
 }
